@@ -5,6 +5,8 @@ const cryptoHash = (...inputs) => {
 
     hash.update(inputs.sort().join(' '));
 
+    // digest is a term in cryptography to represent
+    // result of the hash
     return hash.digest('hex');
 };
 
