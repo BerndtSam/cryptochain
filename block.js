@@ -34,14 +34,16 @@ class Block {
     static adjustDifficulty({ originalBlock, timestamp }) {
         const { difficulty } = originalBlock;
 
-        // if difficulty == 1 and timestamp - originalBlock.timestamp > minerate, difficulty will = 0;
+        // Lower limit of 1
         if (difficulty < 1) return 1;
 
-        if ((timestamp - originalBlock.timestamp) > MINE_RATE) return difficulty - 1;
-        /*if ((timestamp - originalBlock.timestamp) > MINE_RATE) {
+        if ((timestamp - originalBlock.timestamp) > MINE_RATE) {
+            // if mine time is greater than the mine rate
+            // but decreasing the difficulty would go below the lowest difficulty (1)
+            // set the difficulty to 1
             if ((difficulty - 1) >= 1) return difficulty - 1;
             return 1;
-        }*/
+        }
 
 
         return difficulty + 1;

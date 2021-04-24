@@ -11,12 +11,6 @@ describe('Block', () => {
     let difficulty = 1;
     let block = new Block({ timestamp, lastHash, hash, data, nonce, difficulty });
 
-    /*beforeEach(() => {
-        timestamp = 2000;
-        difficulty = 1;
-        block = new Block({ timestamp, lastHash, hash, data, nonce, difficulty });
-    });*/
-
 
     it('has a timestamp, lastHash, hash, and data property', () => {
         expect(block.timestamp).toEqual(timestamp);
@@ -85,31 +79,46 @@ describe('Block', () => {
     });
 
     describe('adjustDifficulty()', () => {
-        it('raises the difficulty for a quickly mined block', () => {
-            expect(Block.adjustDifficulty({
-                originalBlock: block,
-                timestamp: block.timestamp + MINE_RATE - 100
-            })).toEqual(block.difficulty+1);
-        });
+        describe('difficulty is 1', () => {
+            beforeEach(() => {
+               block.difficulty = 1;
+            });
 
-        it('lowers the difficulty for a slowly mined block', () => {
-            expect(Block.adjustDifficulty({
-                originalBlock: block,
-                timestamp: block.timestamp + MINE_RATE + 100
-            })).toEqual(block.difficulty-1);
+            describe('block solves slower than the mine rate', () => {
+                it('sets the difficulty to the lower limit of 1', () => {
+                    timestamp = block.timestamp + MINE_RATE + 1;
+                    expect(Block.adjustDifficulty({ originalBlock: block, timestamp })).toEqual(1);
+                });
+            });
+            describe('block solves faster than the mine rate', () => {
+                it('raises the difficulty', () => {
+                    timestamp = block.timestamp + (MINE_RATE / 2);
+                    expect(Block.adjustDifficulty({ originalBlock: block, timestamp })).toEqual(block.difficulty + 1);
+                });
+            });
         });
+        describe('difficulty is greater than 1', () => {
+            beforeEach(() => {
+                block.difficulty = 2;
+             });
+            it('raises the difficulty for a quickly mined block', () => {
+                expect(Block.adjustDifficulty({
+                    originalBlock: block,
+                    timestamp: block.timestamp + MINE_RATE - 100
+                })).toEqual(block.difficulty+1);
+            });
 
+            it('lowers the difficulty for a slowly mined block', () => {
+                expect(Block.adjustDifficulty({
+                    originalBlock: block,
+                    timestamp: block.timestamp + MINE_RATE + 100
+                })).toEqual(block.difficulty-1);
+            });
+        });
         it('has a lower limit of 1', () => {
             block.difficulty = -1;
 
             expect(Block.adjustDifficulty({ originalBlock: block })).toEqual(1);
         })
-
-        /*describe('difficulty is 1 and the block solves slower than the mine rate', () => {
-            it('sets the difficulty to 1', () => {
-                timestamp = block.timestamp + MINE_RATE + 1;
-                expect(Block.adjustDifficulty({ originalBlock: block, timestamp })).toEqual(1);
-            });
-        });*/
     });
 });
