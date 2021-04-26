@@ -1,6 +1,6 @@
 const Blockchain = require('./blockchain');
 const Block = require('./block');
-
+const cryptoHash = require('./crypto-hash')
 describe('Blockchain', () => {
     let blockchain, newChain, originalChain;
 
@@ -55,6 +55,45 @@ describe('Blockchain', () => {
                     blockchain.chain[2].data = 'some-bad-and-evil-data';
 
                     expect(Blockchain.isValidChain(blockchain.chain)).toBe(false);
+                });
+            });
+
+            describe('and the chain contains a block with a jumped difficulty', () => {
+                let timestamp, nonce, data, lastBlock, lastHash;
+
+                beforeEach(() => {
+                    timestamp = Date.now();
+                    nonce = 0;
+                    data = [];
+                    lastBlock = blockchain.chain[blockchain.chain.length-1];
+                    lastHash = lastBlock.hash;
+                });
+
+                describe('and the difficulty was jumped lower', () => {
+                    it('returns false', () => {
+                        const difficulty = lastBlock.difficulty - 3;
+                        const hash = cryptoHash(timestamp, lastHash, difficulty, nonce, data);
+
+                        const badBlock = new Block({
+                            timestamp, lastHash, hash, nonce, difficulty, data
+                        });
+
+                        blockchain.chain.push(badBlock);
+                        expect(Blockchain.isValidChain(blockchain.chain)).toBe(false);
+                    });
+                });
+                describe('and the difficulty was jumped higher', () => {
+                    it('returns false', () => {
+                        const difficulty = lastBlock.difficulty + 3;
+                        const hash = cryptoHash(timestamp, lastHash, difficulty, nonce, data);
+
+                        const badBlock = new Block({
+                            timestamp, lastHash, hash, nonce, difficulty, data
+                        });
+
+                        blockchain.chain.push(badBlock);
+                        expect(Blockchain.isValidChain(blockchain.chain)).toBe(false);
+                    });
                 });
             });
 
